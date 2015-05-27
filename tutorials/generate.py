@@ -1,10 +1,35 @@
 #!/usr/bin/python2.7
 
 """
-Script that parses the wikipedia dump, and generates the dataset in a nice
-numpy format (i.e. in numpy.npz files).
-Call :
-    generate_word,py --help
+(Comment by HZH)
+generate.py: Script that reads text files named "train"， "valid" and "test" under
+a path and generate NPZ files containing the vocabulary files and the numberized
+text files.
+
+SYNOPSIS
+========
+Input
+    path        path of a folder that contains three text files named "train", "valid" and "test"
+    dest        path and filename to save the output file
+    level       either "words" or "chars". The level at which the text content is tokenized.
+    oov_rate    a floating-point number which represents the out-of-vocabulary rate of the file
+                "train" (e.g. if oov_rate = 0.01, then the most frequent tokens that take up a
+                combined frequency mass of 99% in the file "train" will be added to the vocabulary).
+    dtype       the datatype of the output arrays representing the numberized text files
+Output
+    file "$dest.npz"
+        oov             an integer that is used to represent out-of-vocabulary tokens in the
+                        numberized text files
+        vocabulary      a dict where keys are tokens and values are the corresponding indices used
+                        in the numberization of the text files. A tuple (<unk>: $oov) is added in
+                        addition to the in-vocabulary tokens.
+        n_$level        size of vocabulary
+        train_$level, valid_$level, test_$level
+                        numberized text files stored as Numpy arrays, generated from the files
+                        "$path/train", "$path/valid", "$path/test", respectively
+    file "$dest_dict.npz"
+        unique_$level   a dict that is the inverse of $vocabulary, i.e. where keys are indices and
+                        values are the corresponding tokens
 """
 from collections import Counter
 import ConfigParser
