@@ -40,7 +40,9 @@ import sys
 import numpy
 
 
-def construct_vocabulary(dataset, oov_rate, level):
+def construct_vocabulary(dataset, shrink_method = 'oov_rate', threshold = 0.1, level = 'words'):
+    if shrink_method not in ['oov', 'size']:
+        print 'ERROR: "', shrink_method, '" is not a recognized shrink method.'
     filename = os.path.join(dataset,  'train')
     fd = open(filename, 'rt')
     txt = fd.read()
@@ -60,15 +62,18 @@ def construct_vocabulary(dataset, oov_rate, level):
     print ' .. shrinking the vocabulary size'
     # Decide length
     all_freq = float(sum([x[1] for x in freqs]))
-    up_to = len(freqs)
-    oov = 0.
-    remove_word = True
-    while remove_word:
-        up_to -= 1
-        oov += float(freqs[up_to][1])
-        if oov / all_freq > oov_rate:
-            remove_word = False
-    up_to += 1
+    if shrink_method == 'oov':
+        up_to = len(freqs)
+        oov = 0.
+        remove_word = True
+        while remove_word:
+            up_to -= 1
+            oov += float(freqs[up_to][1])
+            if oov / all_freq > threshold:
+                remove_word = False
+        up_to += 1
+    else:
+        up_to = int(threshold)
     freqs = freqs[:up_to]
     words = [x[0] for x in freqs]
     vocab = dict(zip(words, range(up_to)))
@@ -98,11 +103,12 @@ def main(parser):
     o = parser.parse_args()
     dataset = o.path
     print 'Constructing the vocabulary ..'
-    vocab, freqs, freq_wd = construct_vocabulary(dataset, o.oov_rate, o.level)
+    vocab, freqs, freq_wd = construct_vocabulary(dataset, o.shrink_method, o.threshold, o.level)
     vocab['<unk>'] = numpy.max(list(vocab.values()))+1
     
     oov_default = vocab["<unk>"]
     print "EOL", vocab["\n"]
+    print "<unk>", vocab["<unk>"]
     print 'Constructing train set'
     train = grab_text(dataset, 'train', vocab, oov_default, o.dtype, o.level)
     print 'Constructing valid set'
@@ -174,15 +180,17 @@ sequences or word sequences only.
                             'should be processed in parallel by your model'),
                       default=1)
     """
-    parser.add_argument('--oov-rate',
+    parser.add_argument('--shrink-method',
+                        help=('How to shrink the vocabulary.'
+                            'If shrink-method = `size`, the most frequent'
+                            '`threshold` tokens are kept in the vocabulary.'
+                            'If shrink-method = `oov`, the most infrequent'
+                            'tokens that have a combined occurrence rate of'
+                            '`threshold` are discarded from the vocabulary.')
+                        default='oov')
+    parser.add_argument('--threshold',
                       type=float,
-                      help=('Defines dictionary size. If for example '
-                            'oov_rate is set to 0.01 (meaning 10%) it means '
-                            'that we can shrink our dictionary such that '
-                            'remaining unrepresented words of the **train** '
-                            'set is less then 10%. If set to 0, all words in '
-                            'the training set will be added to the '
-                            'dictionary'),
+                      help=('Meaning varies according to shrink-method.'),
                       default=0.)
     parser.add_argument('--dtype',
                       help='dtype in which to store data',
