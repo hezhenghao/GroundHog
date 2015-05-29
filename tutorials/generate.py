@@ -71,7 +71,9 @@ def construct_vocabulary(dataset, oov_rate, level):
     up_to += 1
     freqs = freqs[:up_to]
     words = [x[0] for x in freqs]
-    return dict(zip(words, range(up_to))), [x[1]/all_freq for x in freqs],freqs
+    vocab = dict(zip(words, range(up_to)))
+    freq_rate = [x[1]/all_freq for x in freqs]
+    return vocab, freq_rate, freqs
 
 
 def grab_text(path, filename, vocab, oov_default, dtype, level):
