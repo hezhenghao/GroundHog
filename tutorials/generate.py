@@ -2,9 +2,8 @@
 
 """
 (Comment by HZH)
-generate.py: Script that reads text files named "train"， "valid" and "test" under
-a path and generate NPZ files containing the vocabulary files and the numberized
-text files.
+generate.py: Script that reads text files named "train"， "valid" and "test" under a path and
+generate NPZ files containing the vocabulary files and the numberized text files.
 
 SYNOPSIS
 ========
@@ -186,7 +185,7 @@ sequences or word sequences only.
                             '`threshold` tokens are kept in the vocabulary.'
                             'If shrink-method = `oov`, the most infrequent'
                             'tokens that have a combined occurrence rate of'
-                            '`threshold` are discarded from the vocabulary.')
+                            '`threshold` are discarded from the vocabulary.'),
                         default='oov')
     parser.add_argument('--threshold',
                       type=float,
